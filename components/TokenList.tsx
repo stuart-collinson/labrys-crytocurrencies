@@ -13,7 +13,6 @@ const useDebounce = (value: string, delay: number) => {
             setDebouncedValue(value);
         }, delay);
 
-        // Unmount when the value changes
         return () => {
             clearTimeout(handler);
         };
@@ -28,6 +27,16 @@ const TokenList: React.FC = () => {
     const [search, setSearch] = useState<string>("");
     const debouncedSearch = useDebounce(search, 500);
 
+    const [sortBy, setSortBy] = useState<string>("rank");
+    const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+
+    enum ESortTypes {
+        RANK = "rank",
+        NAME = "name",
+        PRICE = "price",
+        DAILY_PERCENTAGE = "dailyPercentage"
+    }
+
     useEffect(() => {
         fetchTokens();
     }, [fetchTokens]);
@@ -39,7 +48,6 @@ const TokenList: React.FC = () => {
         const observer = new IntersectionObserver(
             ([entry]) => {
                 if (entry.isIntersecting && hasMore && !loading) {
-                    // Fetch the next set of tokens
                     fetchTokens();
                 }
             },
@@ -57,6 +65,38 @@ const TokenList: React.FC = () => {
     const filteredTokens = tokens.filter((token) =>
         token.name.toLowerCase().includes(debouncedSearch.toLowerCase())
     );
+
+    // Sorting function
+    const sortedTokens = [...filteredTokens].sort((a, b) => {
+        switch (sortBy as ESortTypes) {
+            case ESortTypes.RANK:
+                return sortDirection === "asc" ? a.rank - b.rank : b.rank - a.rank;
+
+            case ESortTypes.NAME:
+                return sortDirection === "asc" ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
+
+            case ESortTypes.PRICE:
+                return sortDirection === "asc" ? parseFloat(a.price) - parseFloat(b.price) : parseFloat(b.price) - parseFloat(a.price);
+
+            case ESortTypes.DAILY_PERCENTAGE:
+                return sortDirection === "asc" ? parseFloat(a.dailyPercentage) - parseFloat(b.dailyPercentage) : parseFloat(b.dailyPercentage) - parseFloat(a.dailyPercentage);
+
+            default:
+                return 0;
+        }
+    });
+
+    // Handle the sorting logic when a column header is clicked
+    const handleSort = (column: string) => {
+        if (column === sortBy) {
+            // If the column is already sorted, toggle the sort direction
+            setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+        } else {
+            // Otherwise, set the column to sort and default to ascending
+            setSortBy(column);
+            setSortDirection("asc");
+        }
+    };
 
     return (
         <div className="space-y-4">
@@ -84,7 +124,50 @@ const TokenList: React.FC = () => {
                 </div>
             </div>
 
-            {filteredTokens.map((token) => (
+            {/* Table Header for Sorting */}
+            <div className="overflow-x-auto">
+                <div className="grid grid-cols-4 gap-4 font-semibold cursor-pointer">
+                    <div
+                        onClick={() => handleSort("rank")}
+                        className="p-2 flex items-center justify-between"
+                    >
+                        Rank
+                        {sortBy === "rank" && (
+                            <span className={`text-${sortDirection === "asc" ? "purple-500" : "purple-700"}`}>{sortDirection === "asc" ? "▲" : "▼"}</span>
+                        )}
+                    </div>
+                    <div
+                        onClick={() => handleSort("name")}
+                        className="p-2 flex items-center justify-between"
+                    >
+                        Name
+                        {sortBy === "name" && (
+                            <span className={`text-${sortDirection === "asc" ? "purple-500" : "purple-700"}`}>{sortDirection === "asc" ? "▲" : "▼"}</span>
+                        )}
+                    </div>
+                    <div
+                        onClick={() => handleSort("price")}
+                        className="p-2 flex items-center justify-between"
+                    >
+                        Price (USD)
+                        {sortBy === "price" && (
+                            <span className={`text-${sortDirection === "asc" ? "purple-500" : "purple-700"}`}>{sortDirection === "asc" ? "▲" : "▼"}</span>
+                        )}
+                    </div>
+                    <div
+                        onClick={() => handleSort("dailyPercentage")}
+                        className="p-2 flex items-center justify-between"
+                    >
+                        24h Change (%)
+                        {sortBy === "dailyPercentage" && (
+                            <span className={`text-${sortDirection === "asc" ? "purple-500" : "purple-700"}`}>{sortDirection === "asc" ? "▲" : "▼"}</span>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Render the filtered and sorted tokens as CryptoCard components */}
+            {sortedTokens.map((token) => (
                 <CryptoCard key={token.rank} {...token} />
             ))}
 

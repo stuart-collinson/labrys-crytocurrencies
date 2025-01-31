@@ -34,7 +34,7 @@ const CryptoCard: React.FC<CryptoCardProps> = ({
       </div>
 
       <div className="flex items-center space-x-4">
-        <p className="text-white font-bold text-lg">{price}</p>
+        <p className="text-white font-bold text-lg">${price}</p>
         <span
           className={`text-sm font-bold px-2 py-1 rounded-md ${
             isPositive ? "bg-green-600 text-white" : "bg-red-600 text-white"
