@@ -10,7 +10,9 @@ interface TokenStore {
     fetchTokens: () => Promise<void>;
 }
 
-export const useTokenStore = create<TokenStore>((set: any, get: any) => ({
+// export const useTokenStore = create<TokenStore>((set: any, get: any) => ({
+export const useTokenStore = create<TokenStore>((set: any) => ({
+
     tokens: [],
     loading: false,
     page: 1,
