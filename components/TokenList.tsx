@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+// import React, { useEffect, useRef } from "react";
+import React from "react";
+
 import CryptoCard from "@/components/CryptoCard";
 // import { useTokenStore } from "@/app/store/useTokenStore";
 // import { cryptocurrencies } from "@/app/common/constants";
